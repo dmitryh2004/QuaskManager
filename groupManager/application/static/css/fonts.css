@@ -1,0 +1,27 @@
+@font-face {
+    font-family: 'Rubik';
+    font-style: normal;
+
+    src: url("../fonts/Rubik/Rubik-VariableFont_wght.ttf") format('woff');
+}
+
+@font-face {
+    font-family: 'Rubik';
+    font-style: italic;
+    
+    src: url("../fonts/Rubik/Rubik-Italic-VariableFont_wght.ttf") format('woff');
+}
+
+@font-face {
+    font-family: 'Noto-Serif';
+    font-style: normal;
+
+    src: url("../fonts/Noto_Serif/NotoSerif-VariableFont_wdth\,wght.ttf") format('woff');
+}
+
+@font-face {
+    font-family: 'Noto-Serif';
+    font-style: italic;
+    
+    src: url("../fonts/Noto_Serif/NotoSerif-Italic-VariableFont_wdth\,wght.ttf") format('woff');
+}

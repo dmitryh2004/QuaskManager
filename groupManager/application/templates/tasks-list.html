@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список заданий в группе {{ groupname }}</title>
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+    <div id="container">
+        {% if info %}
+            <div class="colored_block green">
+                {{ info }}
+            </div>
+        {% endif %}
+        {% if user_error %}
+            <div class="colored_block red">
+                {{ user_error }}
+            </div>
+        {% endif %}
+        {% if error %}
+            <div class="colored_block orange opaque">
+                {{ error }}
+            </div>
+        {% endif %}
+        <div class="colored_block cyan">
+            {% if tasks %}
+            <h2>Список заданий в группе {{ groupname }}</h2>
+            <table id="taskTable">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Предмет</th>
+                        <th>Задание</th>
+                        <th>Исполнитель</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="taskBody">
+                    <!-- Данные будут добавлены здесь -->
+                    {% for task in tasks %}
+                        <tr>
+                            <td>{{task.subject_id}}</td>
+                            <td>{{task.name}}</td>
+                            <td>{{task.user_id}}</td>
+                            <td>
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <script>
+                var users = {};
+
+                {% for user in users %}
+                var user = {};
+                user["name"] = "{{ user.name }}";
+                {% if user.image %}
+                user["image"] = "{{ user.image }}";
+                {% else %}
+                user["image"] = null;
+                {% endif %}
+                users[{{ user.id }}] = user;
+                {% endfor %}
+
+                var subjects = {};
+
+                {% for subject in subjects %}
+                subjects[{{subject.id}}] = "{{subject.name}}";
+                {% endfor %}
+
+                var current_user_id = {{ current_user_id }};
+
+                function fetchTasks() {
+                    $.ajax({
+                        url: '{% url "tasks-list-rtu" group_id %}', // Используйте имя URL из urls.py
+                        method: 'GET',
+                        success: function(data) {
+                            $('#taskBody').empty(); // Очищаем текущее содержимое таблицы
+                            data.forEach(function(task) {
+                                console.log(task);
+                                var user = users[task.user_id];
+                                var user_col = "Свободно";
+                                var url = "/tasks/task-claim/" + task.id + "/" + current_user_id;
+                                var actions = "<a href=" + url + "><button>Занять</button></a>";
+                                console.log(user);
+                                if (!(user === undefined)) {
+                                    var image_path = user["image"];
+                                    if (image_path == null) {
+                                        image_path = "{% static 'media/img/profile-default.png'%}";
+                                    }
+                                    var username = user.name;
+
+                                    user_col = "<div class='name_and_image'>\
+                                                    <img class='user_photo' src=" + image_path + ">\
+                                                    <p>" + username + "</p>\
+                                                </div>";
+                                    if (task.user_id != current_user_id)
+                                        actions = "";
+                                    else {
+                                        url = "/tasks/task-unclaim/" + task.id + "/" + current_user_id;
+                                        actions = "<a href=" + url + "><button>Освободить</button></a>";
+                                        url = "/tasks/task-complete/" + task.id;
+                                        actions += "<br><a href=" + url + "><button>Отметить как выполненное</button></a>";
+                                    }
+                                }
+                                var row = "<tr>\
+                                        <td>" + subjects[task.subject_id] + "</td>\
+                                        <td>" + task.taskName + "</td>\
+                                        <td>\
+                                            " + user_col + "\
+                                        </td>\
+                                        <td>\
+                                            " + actions + "\
+                                        </td>\
+                                    </tr>\
+                                ";
+                                console.log(row);
+                                $("#taskBody").append(row);
+                            });
+                        },
+                        error: function(xhr) {
+                            console.error('Ошибка при получении задач:', xhr);
+                        }
+                    });
+                    setScrollBarMultiple("main", ["container"]);
+                }
+
+                // Запрашиваем задачи каждые 2 секунды
+                setInterval(fetchTasks, 2000);
+                // Первый вызов для загрузки данных сразу после загрузки страницы
+                fetchTasks();
+            </script>
+            <p>Данные о состоянии заданий обновляются каждые 2 секунды.</p>
+            {% else %}
+            В вашей группе нет невыполненных заданий.<br><br><br>Возможно, что-то изменилось: нажмите "Обновить".
+            {% endif %}
+        </div>
+    </div>
+  </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

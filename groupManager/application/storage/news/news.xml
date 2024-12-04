@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<news>
+    <record>
+        <id>1</id>
+        <author>0</author>
+        <groups>
+            <group id="1"></group>
+            <group id="2"></group>
+            <group id="3"></group>
+        </groups>
+        <date>24-07-03 15:00</date>
+        <title>Тестовая новость</title>
+        <shortdesc> <!--HTML текст-->
+            <img src="record1_shortdesc.png">
+            </img>
+            <p>
+                Это тестовая новость. Нажмите на нее, чтобы узнать больше.
+            </p>
+        </shortdesc>
+        <content> <!--HTML текст-->
+            <img src="record1_image1.png">
+            </img>
+            <p>
+                Это тестовая новость. Здесь должно быть написано очень много разной фигни.
+            </p>
+            <img src="record1_image2.png">
+            </img>
+            <p>
+                А также картинки))
+            </p>
+        </content>
+    </record>
+    <record>
+        <id>2</id>
+        <author>0</author>
+        <groups>
+            <group id="1"></group>
+            <group id="2"></group>
+            <group id="3"></group>
+        </groups>
+        <date>24-07-04 15:00</date>
+        <title>Вторая тестовая новость</title>
+        <shortdesc> <!--HTML текст-->
+            <img src="record2_shortdesc.png">
+            </img>
+            <p>
+                Это вторая тестовая новость. Нажмите на нее, чтобы узнать больше.
+            </p>
+        </shortdesc>
+        <content> <!--HTML текст-->
+            <img src="record2_image1.png">
+            </img>
+            <p>
+                Это вторая тестовая новость. Я отличаюсь от первой.
+            </p>
+            <p>
+                Картинок будет меньше, чем в первой новости(
+            </p>
+        </content>
+    </record>
+    <record>
+        <id>3</id>
+        <author>0</author>
+        <groups>
+            <group id="1"></group>
+            <group id="2"></group>
+            <group id="3"></group>
+        </groups>
+        <date>24-07-05 15:00</date>
+        <title>Третья тестовая новость</title>
+        <shortdesc> <!--HTML текст-->
+            <img src="record3_shortdesc.png">
+            </img>
+            <p>
+                Это третья тестовая новость. Нажмите на нее, чтобы узнать больше.
+            </p>
+        </shortdesc>
+        <content> <!--HTML текст-->
+            <p>
+                Это третья тестовая новость. Я доступна только одной группе.
+            </p>
+            <p>
+                Картинок не будет, они не дошли
+            </p>
+        </content>
+    </record>
+    <record>
+        <id>4</id>
+        <author>0</author>
+        <groups>
+            <group id="3"></group>
+        </groups>
+        <date>24-07-05 15:34</date>
+        <title>Четвертая тестовая новость</title>
+        <shortdesc> <!--HTML текст-->
+            <p>
+                Это четвертая тестовая новость. Нажмите на нее, чтобы узнать больше.
+            </p>
+        </shortdesc>
+        <content> <!--HTML текст-->
+            <p>
+                Это четвертая тестовая новость. Я сделана для проверки вывода последних 3 новостей.
+            </p>
+        </content>
+    </record>
+    <record>
+        <id>5</id>
+        <author>0</author>
+        <groups>
+            <all></all>
+        </groups>
+        <date>24-07-21 15:00</date>
+        <title>Пятая тестовая новость</title>
+        <shortdesc> <!--HTML текст-->
+            <p>
+                Это пятая тестовая новость. Нажмите на нее, чтобы узнать больше.
+            </p>
+        </shortdesc>
+        <content> <!--HTML текст-->
+            <p>
+                Это пятая тестовая новость. Я видна всем группам.
+            </p>
+        </content>
+    </record>
+</news>

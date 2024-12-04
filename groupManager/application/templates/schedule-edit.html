@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ groupname }} - Редактирование расписания</title>
+    <link href="{% static "css/schedule.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+    {% if error %}
+      <div class="colored_block orange opaque">
+          {{error}}
+      </div>
+    {% else %}
+      <div class="colored_block cyan" id="schedule-edit-block">
+        <h2>Редактирование расписания {{ groupname }}</h2>
+        <p>Неделя: {% if even == 1 %}четная{% else %}нечетная{% endif %}</p>
+        <p>День: {{ weekday_name }}</p>
+        <p>Номер пары: {{ pairNumber }}</p>
+
+        <form id="schedule-edit" action="{% url 'schedule-update' group even weekday pairNumber %}" method="post">
+          {% csrf_token %}
+          {% if subjects %}
+            <label for="subject">Предмет: </label>
+            <select id="subject" name="subject" required>
+              <option disabled {% if not subject %}selected{% endif %} value="">-- Выберите предмет --</option>
+              {% for id, name in subjects.items %}
+              <option {% if id == subject %}selected{% endif %} value="{{ id }}">{{ name.name }}</option>
+              {% empty %}
+              {% endfor %}
+            </select>
+          {% else %}
+          <p>В базе данных нет ни одного предмета. Сначала создайте предмет на странице администратора.</p>
+          {% endif %}
+          <br>
+          {% if auditories %}
+            <label for="auditory">Аудитория: </label>
+            <select id="auditory" name="auditory" required>
+              <option disabled {% if not auditory %}selected{% endif %} value="">-- Выберите аудиторию --</option>
+              {% for id, campus in campuses.items %}
+                <optgroup label="{{campus.name}} ({{campus.address}})">
+                  {% for a_id, aud in auditories.items %}
+                  {% if aud.campusID == id %}
+                    <option {% if a_id == auditory %}selected{% endif %} value="{{ a_id }}">{{ aud.name }}</option>
+                  {% endif %}
+                  {% empty %}
+                  {% endfor %}
+                </optgroup>
+              {% endfor %}
+
+            </select>
+          {% else %}
+          <p>В базе данных нет ни одной аудитории. Сначала создайте аудиторию на странице администратора.</p>
+          {% endif %}
+          <br>
+          {% if pairTypes %}
+            <label for="pairType">Тип пары: </label>
+            <select id="pairType" name="pairType" required>
+              <option disabled {% if not pairType %}selected{% endif %} value="">-- Выберите тип пары --</option>
+              {% for id, name in pairTypes.items %}
+              <option {% if id == pairType %}selected{% endif %} value="{{ id }}">{{ name.name }}</option>
+              {% empty %}
+              {% endfor %}
+            </select>
+          {% else %}
+          <p>В базе данных нет ни одного типа пары. Сначала создайте типы пар вручную в базе данных.</p>
+          {% endif %}
+          <br>
+          {% if subjects and auditories and pairTypes %}
+            <button type="submit">Сохранить</button>
+          {% endif %}
+          {% if subject and auditory and pairType %}
+            <button type="submit" formaction="{% url 'schedule-delete' group even weekday pairNumber %}">Удалить</button>
+          {% endif %}
+        </form>
+      </div>
+    {% endif %}
+  </section>
+  {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBar("main", "schedule-edit-block");
+</script>
+</html>

@@ -1,0 +1,64 @@
+{% load static %}
+<style>
+    {% if not preferredTheme|divisibleby:2 %}
+    body {
+        background-image: url("/static/media/img/background/background-dark.png");
+        color: #ddd;
+    }
+
+    a {
+        color: #ff0;
+    }
+
+    a:visited {
+        color: #880;
+    }
+
+    a:hover {
+        color: #fff;
+    }
+
+    img.ui {
+        filter: invert(1);
+    }
+
+    table, tr, td, th {
+        border-color: #ddd;
+    }
+
+    tr.its-you {
+        color: #44f;
+        font-weight: bold;
+    }
+
+    div#divider {
+      background-color: #ddd;
+    }
+
+    p.divider {
+        border: 1px solid #ddd;
+    }
+    {% endif %}
+</style>
+<script>
+    var theme = Math.floor({{ preferredTheme }} / 2);
+    console.log(theme);
+
+    switch (theme) {
+        case 1:
+            replaceClass("cyan", "red");
+            break;
+        case 2:
+            replaceClass("cyan", "orange");
+            break;
+        case 3:
+            replaceClass("cyan", "green");
+            break;
+        case 4:
+            replaceClass("cyan", "blue");
+            break;
+        case 5:
+            replaceClass("cyan", "purple");
+            break;
+    }
+</script>

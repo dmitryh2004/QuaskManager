@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Информация о сайте</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/common.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "css/colored_blocks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+    <div class="colored_block cyan" style="padding: 10px; margin: 10px auto;">
+        <h2>Информация о сайте</h2>
+        <p>
+            Это сайт для управления очередями и заданиями в группах.
+        </p>
+    </div>
+    <div class="colored_block cyan" style="padding: 10px; margin: 10px auto;">
+        <p>
+            <h3>Для кого предназначен этот сайт</h3>
+            Сайт предназначен для студентов МИРЭА, сталкивавшихся со следующими ситуациями:
+            <ul>
+                <li>
+                    По какому-либо предмету преподаватель проверяет по 3 человека за пару. В чате группы начинается выяснение, кто на каком месте в очереди (разработчик сайта с такой ситуацией сталкивался, и не раз);
+                </li>
+                <li>
+                    По какому-либо предмету преподаватель выдает темы докладов, а в чате группы начинается выяснение, кто какую тему занял.
+                </li>
+            </ul>
+            Наверняка в эти моменты вы думали: "Вот бы был сайт, на котором можно будет и создать очереди, и занять тему..."
+        </p>
+        <p>
+            И знаете, что? Вы пришли точно по адресу!
+        </p>
+    </div>
+    <div class="colored_block cyan" style="padding: 10px; margin: 10px auto;">
+        <p>
+            <h3>Возможности сайта</h3>
+            У нас вы сможете:
+            <ul>
+                <li>посмотреть очередь по предмету с тем самым медленным преподавателем;</li>
+                <li>занять очередь;</li>
+                <li>при желании - пропустить кого-то вперед;</li>
+                <li>занять для себя тему доклада;</li>
+            </ul>
+            А также:
+            <ul>
+                <li>посмотреть расписание своей группы;</li>
+                <li>посмотреть новости своей группы и всего сайта.</li>
+            </ul>
+            {% if userroleID %}
+            Если в ходе работы с сайтом возникли какие-либо трудности, можно ознакомиться с этим руководством:
+            {% endif %}
+        </p>
+        {% if userroleID %}
+        <p><a href="{% url 'guide' userroleID %}"><button>Руководство</button></a></p>
+        {% else %}
+        <p>Для того, чтобы просмотреть руководство, войдите в аккаунт.</p>
+        {% endif %}
+        <p><a href="{% url 'home' %}"><button>Назад</button></a></p>
+    </div>
+    <div class="colored_block purple" style="padding: 10px; margin: 10px auto;" color_const>
+        <p>
+            <h3>Контакты разработчиков</h3>
+            Остались вопросы? Нашли баг или придумали новую идею для реализации?<br>
+            Вы можете написать разработчикам:
+
+        </p>
+    </div>
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

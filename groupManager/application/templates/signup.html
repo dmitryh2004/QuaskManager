@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{% static "css/register.css" %}" rel="stylesheet" type="text/css">
+    </head>
+    <script src="{% static "js/colors.js" %}"></script>
+    <script src="{% static 'js/password_strength.js' %}"></script>
+    <body onload="init('password_input', 'signupForm');">
+        {% if info %}
+        <div class="colored_block green info">
+            {{ info }}
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="colored_block red error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="colored_block cyan form">
+            <h2>Регистрация в системе</h2>
+            <form id="signupForm" action="/register" method="POST">
+                {% csrf_token %}
+                <div class="form_row">
+                    <label for="name">Имя:</label>
+                    <input name="name" {% if name %}value={{ name }}{% endif %} required>
+                </div>
+                <br><br>
+                <div class="form_row">
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" {% if email %}value={{ email }}{% endif %} required>
+                </div>
+                <br><br>
+                <div class="form_row">
+                    <label for="password">Пароль:</label>
+                    <input id="password_input" type="password" name="password" {% if password %}value={{ password }}{% endif %} required>
+                </div>
+                <br><br>
+                <div class="colored_block purple" style="text-align: left; padding: 10px;">
+                    Минимальные требования к паролю:
+                    <ul>
+                        <li>он должен состоять из 8 и более символов;</li>
+                        <li>он должен содержать в себе буквы и цифры.</li>
+                    </ul>
+                    Рекомендуемые требования:
+                    <ul>
+                        <li>он должен состоять из 16 и более символов;</li>
+                        <li>он должен содержать в себе:
+                            <ul>
+                                <li>заглавные буквы;</li>
+                                <li>строчные буквы;</li>
+                                <li>цифры;</li>
+                                <li>спецсимволы.</li>
+                            </ul>
+                        </li>
+                        <li>пароль не должен совпадать с какими-либо паролями, используемыми Вами на других сайтах;</li>
+                        <li>пароль не должен нести в себе какую-либо личную информацию.</li>
+                    </ul>
+                </div>
+                <br><br>
+                <div class="form_row">
+                    <label for="password_repeat">Повторите пароль:</label>
+                    <input type="password" name="password_repeat" {% if password_repeat %}value={{ password_repeat }}{% endif %} required>
+                </div>
+                <br><br>
+                <div class="form_row">
+                    <label for="group_select">Ваша группа:</label>
+                    <select name="group_select" required>
+                        <option value="0"{% if not group_selected %} selected{% endif %}>-- Продолжить без группы --</option>
+                        {% for group in groups %}
+                            <option value="{{group.id}}"{% if group_selected == group.id %} selected{% endif %}>{{group.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <br><br>
+                <button type="submit">Зарегистрироваться</button><br>
+                <p class="small">Уже есть аккаунт? <a href="{{login_link}}">Войти</a></p>
+            </form>
+        </div>
+    </body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

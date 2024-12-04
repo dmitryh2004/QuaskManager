@@ -1,0 +1,26 @@
+@import url("common.css");
+@import url("colored_blocks.css");
+
+div.form, div.info, div.error {
+    width: 50%;
+    margin: 10px auto;
+    padding: 10px;
+    text-align: center;
+}
+
+div.form_row {
+    width: 50%;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+div.form_row label {
+    width: 30%;
+    text-align: left;
+}
+
+div.form_row input {
+    width: 60%;
+    flex-grow: 1;
+}

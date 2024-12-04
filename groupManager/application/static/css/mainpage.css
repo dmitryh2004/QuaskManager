@@ -1,0 +1,108 @@
+@import url("common.css");
+@import url("colored_blocks.css");
+
+section#main {
+    display: grid;
+    grid-template-areas: "left right";
+    grid-template-columns: 200fr 100fr;
+    column-gap: 20px;
+    width: calc(100% - 20px);
+    /*height: calc(100% - 4em - 20px);*/
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}
+
+section#left {
+    grid-area: left;
+
+    /*height: 100%;*/
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-right: 10px;
+
+    display: grid;
+    grid-template-rows: repeat(4, min-content);
+    row-gap: 20px;
+    grid-template-areas: "profile"
+    "schedule"
+    "queues"
+    "taken_tasks";
+}
+
+section#left > * {
+    padding: 10px;
+}
+
+section#right {
+    grid-area: right;
+
+    /*height: 100%;*/
+    overflow-y: scroll;
+    overflow-x: hidden;
+    
+    display: grid;
+    grid-template-rows: auto;
+    row-gap: 20px;
+
+    padding-right: 30px;
+}
+
+div.footer {
+    width: calc(100% + 20px);
+    border-radius: 0px !important;
+    position: fixed;
+    height: 4em;
+    bottom: 0px;
+    left: -10px;
+    text-align: center;
+
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-areas: ". footer .";
+    align-items: center;
+}
+
+div.footer > p {
+    grid-area: footer;
+}
+
+div#profile_block {
+    padding: 10px;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    cursor: pointer;
+}
+
+div#profile_block img {
+    width: 100px;
+    height: 100px;
+    border: 1px solid rgba(0,0,0,0.5);
+    border-radius: 25%;
+}
+
+div#news_block {
+    padding: 10px;
+    width: 100%;
+    height: min-content;
+    display: flex;
+    flex-direction: column;
+    column-gap: 20px;
+}
+
+div.news_item {
+    padding: 10px;
+    margin-top: 10px;
+}
+
+div#profile_image_container {
+    position: relative;
+}
+
+div#notifications_block {
+    position: absolute;
+    top: 0;
+    right: 0;
+}

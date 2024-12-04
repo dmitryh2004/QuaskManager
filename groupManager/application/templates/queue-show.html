@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список очередей в группе {{ groupname }}</title>
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<style>
+    tr.passed {
+        color: #888;
+    }
+</style>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+    <div id="container">
+      <div class="colored_block cyan" id="queue_block">
+          <p>
+              {% if queue.title %}
+                  <h2>{{queue.title}}</h2>
+              {% else %}
+                  <h2>Очередь по предмету {{queue.subject}}</h2>
+              {% endif %}
+              <b>Статус очереди:</b> {% if not queue.active %}не {% endif %}активна<br>
+              <b>Можно записаться самому:</b> {% if queue.type == 1 %}да{% else %}нет{% endif %}
+          </p>
+          <div id="queue_table">
+              <table>
+                  <thead>
+                    <tr>
+                        <th>Номер</th>
+                        <th>Пользователь</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody id="queueBody">
+
+                  </tbody>
+                  <script>
+                        var users = {};
+
+                        {% for user in users %}
+                        var user = {};
+                        user["name"] = "{{ user.name }}";
+                        {% if user.image %}
+                        user["image"] = "{{ user.image }}";
+                        {% else %}
+                        user["image"] = null;
+                        {% endif %}
+                        users[{{ user.id }}] = user;
+                        {% endfor %}
+
+                        var current_user_id = {{ current_user_id }};
+                        var current_user_role = {{ current_user_role }};
+
+                        function fetchQueue() {
+                            $.ajax({
+                                url: '{% url "queue-show-rtu" queue.id %}', // Используйте имя URL из urls.py
+                                method: 'GET',
+                                success: function(data) {
+                                    var user_ids_in_queue = [];
+                                    var your_order = null;
+                                    var previous_order_is_0 = false;
+                                    var queue_size = data.queue_size;
+                                    var statuses = {};
+                                    statuses[0] = "В очереди";
+                                    statuses[1] = "Решает";
+                                    statuses[2] = "Отвечает";
+                                    statuses[3] = "-";
+                                    $('#queueBody').empty(); // Очищаем текущее содержимое таблицы
+                                    data.queue.forEach(function(entry) {
+                                        var user = users[entry.user.id];
+                                        if ((entry.user.id == current_user_id) && (entry.orderStatus == 0)) {
+                                            your_order = entry.order;
+                                        }
+                                        var user_col = "";
+                                        var order = entry.order;
+                                        var element_class = (entry.orderStatus == 3) ? " class='passed'" : ((entry.orderStatus == 0) ? "" : " class='selected'");
+
+                                        var image_path = user["image"];
+                                        if (image_path == null) {
+                                            image_path = "{% static 'media/img/profile-default.png'%}";
+                                        }
+                                        var username = user.name;
+
+                                        user_col = "<div class='name_and_image'>\
+                                                    <img class='user_photo' src=" + image_path + ">\
+                                                    <p>" + username + "</p>\
+                                                </div>";
+
+                                        var actions = "";
+                                        if (entry.orderStatus == 0) {
+                                            user_ids_in_queue.push(entry.user.id);
+                                            if (current_user_role > 1) {
+                                                if ((order > 1) && previous_order_is_0) {
+                                                    actions += "<a href='/queue/queue-update/" + {{queue.id}} + "?order=" + order + "&action=up&token=" + entry.token + "'><img class='ui small' src='{% static 'media/img/icons/up.png' %}'></a>";
+                                                }
+                                                if (order < queue_size) {
+                                                    actions += "<a href='/queue/queue-update/" + {{queue.id}} + "?order=" + order + "&action=down&token=" + entry.token + "'><img class='ui small' src='{% static 'media/img/icons/down.png' %}'></a>";
+                                                }
+                                                actions += "<a href='/queue/queue-update/" + {{queue.id}} + "?order=" + order + "&action=delete&token=" + entry.token + "'><img class='ui small' src='{% static 'media/img/icons/delete.png' %}'></a>";
+                                            }
+                                            else {
+                                                if (order == your_order) {
+                                                    if (order < queue_size) {
+                                                        actions += "<a href='/queue/queue-update/" + {{queue.id}} + "?order=" + order + "&action=down&token=" + entry.token + "'><img class='ui small' src='{% static 'media/img/icons/down.png' %}'></a>";
+                                                    }
+                                                    actions += "<a href='/queue/queue-update/" + {{queue.id}} + "?order=" + order + "&action=delete&token=" + entry.token + "'><img class='ui small' src='{% static 'media/img/icons/delete.png' %}'></a>";
+                                                }
+                                                else if ((your_order != null) && (order == your_order + 1)) {
+                                                    actions += "<a href='/queue/queue-update/" + {{queue.id}} + "?order=" + order + "&action=up&token=" + entry.token + "'><img class='ui small' src='{% static 'media/img/icons/up.png' %}'></a>";
+                                                }
+                                            }
+                                        }
+
+                                        var row = "<tr" + element_class + ">" +
+                                                "<td>" + entry.order + "</td>\
+                                                <td>" + user_col + "</td>\
+                                                <td>\
+                                                    " + statuses[entry.orderStatus] + "\
+                                                </td>\
+                                                <td>\
+                                                    " + actions + "\
+                                                </td>\
+                                            </tr>\
+                                        ";
+                                        $("#queueBody").append(row);
+                                        if (entry.orderStatus == 0) {
+                                            previous_order_is_0 = true;
+                                        }
+                                        else {
+                                            previous_order_is_0 = false;
+                                        }
+                                    });
+
+                                    if (current_user_role > 1) {
+                                        var new_member_select = $("#new_member");
+                                        var form = document.getElementById("add_form");
+                                        var selected_id = $('#new_member').val();
+                                        new_member_select.empty();
+                                        form.style.display = "none";
+
+                                        Object.entries(users).forEach(function([userId, entry]) {
+                                            var includes = false;
+                                            for(var temp in user_ids_in_queue) {
+                                                if (user_ids_in_queue[temp] == userId) includes = true;
+                                            }
+                                            if (!includes) {
+                                                var image_path = entry["image"];
+                                                if (image_path == null) {
+                                                    image_path = "{% static 'media/img/profile-default.png'%}";
+                                                }
+                                                var username = entry.name;
+                                                var selected = (selected_id == userId) ? " selected" : "";
+
+                                                var user_col = "<div class='name_and_image'>\
+                                                            <img class='user_photo' src=" + image_path + ">\
+                                                            <p>" + username + "</p>\
+                                                        </div>";
+                                                var option = "<option value='" + userId + "'" + selected + ">" + user_col + "</option>";
+                                                new_member_select.append(option);
+                                                form.style.display = "block";
+                                            }
+                                        });
+                                    }
+
+                                    setScrollBarMultiple("main", ["container"]);
+                                },
+                                error: function(xhr) {
+                                    console.error('Ошибка при получении задач:', xhr);
+                                }
+                            });
+                        }
+
+                        // Запрашиваем задачи каждые 2 секунды
+                        setInterval(fetchQueue, 2000);
+                        // Первый вызов для загрузки данных сразу после загрузки страницы
+                        fetchQueue();
+                  </script>
+              </table>
+              {% if queue.type == 1 %}
+              <p>Записаться в очередь можно на странице со списком очередей, выбрав опцию "Записаться".</p>
+              {% endif %}
+              {% if current_user_role > 1 %}
+                  <p>
+                      <a href="{% url 'queue-update' queue.id %}?action=deactivate"><button>Деактивировать очередь</button></a>
+                      <a href="{% url 'queue-update' queue.id %}?action=activate"><button>Активировать очередь</button></a>
+                      <form method="post" action="{% url 'queue-update' queue.id %}" id="add_form">
+                        {% csrf_token %}
+                        <label for="new_member">Добавить в очередь: </label>
+                        <select id="new_member" name="new_member" required>
+                            <option value="0" disabled selected>-- Выберите вариант --</option>
+                        </select>
+                        <button type="submit">Добавить</button>
+                      </form>
+                  </p>
+              {% endif %}
+          </div>
+      </div>
+    </div>
+  </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

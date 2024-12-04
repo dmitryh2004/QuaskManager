@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание записи в таблице {{table_name}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/admin.css" %}" rel="stylesheet" type="text/css">
+</head>
+
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<style>
+    div#table_select {
+        width: 100%;
+        display: grid;
+        justify-items: center;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    div#table_select button {
+        background-color: #ddd;
+    }
+
+    div#table_select button.not_recommended {
+        background-color: #f80;
+    }
+</style>
+<body>
+    <section id="main">
+        <div id="container">
+          {% if error %}
+            <div class="colored_block orange opaque">
+              {{error}}
+            </div>
+          {% else %}
+            {% if info %}
+              <div class="colored_block green">
+                {{info}}
+              </div>
+            {% endif %}
+            <div class="colored_block cyan" id="update_block">
+              <h2>Создание объекта {{ table_name }}</h2>
+              <form method="post">
+                  {% csrf_token %}
+                  {% for field, value in fields.items %}
+                      {% if field == 'role_id' %}
+                        <label for="{{ field }}">{{ field|capfirst }}: </label>
+                        <select id="{{field}}" name="{{field}}" onchange="toggleGroupSelection()" required>
+                            {% for role in roles %}
+                                <option value="{{ role.id }}"{% if value == role.id %} selected{% endif %}>{{ role.name }}</option>
+                            {% endfor %}
+                        </select><br><br>
+                      {% elif field == 'group_id' %}
+                        <label for="{{ field }}">Группа: </label>
+                        <select id="{{field}}" name="{{field}}" required>
+                            <option value="0" selected>Нет группы</option>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}"{% if group.id == value %} selected{% endif %}>{{ group.name }}</option>
+                            {% endfor %}
+                        </select><br><br>
+                      {% elif field == 'campus_id' %}
+                        <label for="{{ field }}">Корпус: </label>
+                        <select id="{{field}}" name="{{field}}" required>
+                            {% for campus in campuses %}
+                                <option value="{{ campus.id }}"{% if campus.id == value %} selected{% endif %}>{{ campus.name }} ({{ campus.address }})</option>
+                            {% endfor %}
+                        </select><br><br>
+                      {% elif field == 'password_hash' %}
+                        <label for="{{ field }}">Пароль: </label>
+                        <input type="password" id="{{ field }}" name="{{ field }}"><br><br>
+                      {% elif field == 'last_login' %}
+                        <label for="{{ field }}">{{ field|capfirst }}: </label>
+                        <input type="datetime-local" id="{{ field }}" name="{{ field }}"><br><br>
+                      {% else %}
+                        <label for="{{ field }}">{{ field|capfirst }}: </label>
+                        <input type="text" id="{{ field }}" name="{{ field }}" value="{{ value }}" required><br><br>
+                      {% endif %}
+                  {% endfor %}
+
+                  <input type="submit" value="Создать">
+              </form>
+            </div>
+          {% endif %}
+        </div>
+    </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+<script>
+function toggleGroupSelection() {
+    const roleSelect = document.getElementById('role_id');
+    const groupSelect = document.getElementById('group_id');
+
+    // Блокируем выбор группы, если выбрана роль с ID 4 или 5
+    if (roleSelect.value === '4' || roleSelect.value === '5') {
+        groupSelect.disabled = true; // Блокируем выбор
+        groupSelect.value = 0; // Сбрасываем выбор
+    } else {
+        groupSelect.disabled = false; // Разблокируем выбор
+    }
+}
+
+// Инициализация состояния при загрузке страницы
+document.addEventListener('DOMContentLoaded', toggleGroupSelection);
+</script>
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBar("main", "container");
+</script>
+</html>

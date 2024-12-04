@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование профиля</title>
+    <link href="{% static "css/profile.css" %}" rel="stylesheet" type="text/css">
+</head>
+
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+    {% if error %}
+      <div class="colored_block orange opaque" color_const>
+          {{error}}
+      </div>
+    {% elif info %}
+      <div class="colored_block green" color_const>
+          {{info}}
+      </div>
+    {% else %}
+      <div class="colored_block cyan" id="profile-edit-block">
+        <h2>Редактирование профиля</h2>
+        <form method="post" action="{% url 'profile-update' 'name' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label for="username">Имя пользователя: </label>
+          <input type="text" name="username" id="username" value="{{ username }}" required><br>
+
+          <label for="image">
+              <p>Аватар профиля:</p>
+              <img id="avatar" src="{% if path %}
+              {{ path }}
+              {% else %}
+              {% static 'media/img/profile-default.png' %}
+              {% endif %}" style="width: 128px; height: 128px;">
+              <p class="small">Нажмите на изображение, чтобы изменить его.</p>
+          </label>
+          <input type="file" name="image" id="image" accept="image/*" hidden>
+
+          <button type="submit">Сохранить</button>
+        </form>
+        <a href="{% url 'profile-change-password' %}"><button>Сменить пароль</button></a><br>
+      </div>
+    {% endif %}
+  </section>
+  {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+<script>
+    setScrollBar("main", "profile-edit-block");
+</script>
+<script>
+    // Получаем элементы img и input
+    const imageInput = document.getElementById('image');
+    const avatarImage = document.getElementById('avatar');
+
+    // Добавляем обработчик события change для input
+    imageInput.addEventListener('change', function(event) {
+        const file = event.target.files[0]; // Получаем загруженный файл
+
+        if (file) {
+            const reader = new FileReader(); // Создаем новый объект FileReader
+
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+
+                img.onload = function() {
+                    // Создаем canvas для обработки изображения
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Устанавливаем размеры canvas
+                    const size = 256;
+                    canvas.width = size;
+                    canvas.height = size;
+
+                    // Рассчитываем координаты для обрезки по центру
+                    const xOffset = (img.width > img.height) ? (img.width - img.height) / 2 : 0;
+                    const yOffset = (img.height > img.width) ? (img.height - img.width) / 2 : 0;
+
+                    // Изменяем размер и обрезаем изображение
+                    ctx.drawImage(img, xOffset, yOffset, Math.min(img.width, img.height), Math.min(img.width, img.height), 0, 0, size, size);
+
+                    // Получаем обработанное изображение
+                    avatarImage.src = canvas.toDataURL('image/png'); // Обновляем src у img
+                };
+            };
+
+            reader.readAsDataURL(file); // Читаем файл как Data URL
+        }
+    });
+</script>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

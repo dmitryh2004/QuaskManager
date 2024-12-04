@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список очередей в группе {{ groupname }}</title>
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+    <div id="container">
+        {% if info %}
+            <div class="colored_block green">
+                {{ info }}
+            </div>
+        {% endif %}
+        {% if user_error %}
+            <div class="colored_block red">
+                {{ user_error }}
+            </div>
+        {% endif %}
+        {% if error %}
+            <div class="colored_block orange opaque">
+                {{ error }}
+            </div>
+        {% endif %}
+        <div class="colored_block cyan">
+            <h2>Список очередей в группе {{ groupname }}</h2>
+            <table id="queueTable">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Предмет</th>
+                        <th>Название</th>
+                        <th>Можно записаться самому</th>
+                        <th>Ваше место</th>
+                        <th>Состояние очереди</th>
+                        <th style="width: 15%;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="queueBody">
+                    <!-- Данные будут добавлены здесь -->
+
+                </tbody>
+            </table>
+            <script>
+                var subjects = {};
+
+                {% for subject in subjects %}
+                subjects[{{subject.id}}] = "{{subject.name}}";
+                {% endfor %}
+
+                var group_id = {{ group_id }};
+                var current_user_id = {{ current_user_id }};
+
+                function fetchQueues() {
+                    $.ajax({
+                        url: '{% url "queue-list-rtu" group_id current_user_id %}',
+                        method: 'GET',
+                        success: function(data) {
+                            $('#queueBody').empty(); // Очищаем текущее содержимое таблицы
+                            data.forEach(function(queue) {
+                                console.log(queue);
+                                var url = "/queue/signup/" + queue.id + "/" + current_user_id;
+                                var actions = "";
+                                if (queue.type != 0) {
+                                    actions += "<a href='" + url + "'><button>Записаться</button></a>";
+                                }
+
+                                if (queue.place != 0) {
+                                    url = "/queue/signout/" + queue.id + "/" + current_user_id;
+                                    actions = "<a href='" + url + "'><button>Выйти из очереди</button></a>";
+                                }
+
+                                actions += "<a href='/queue/" + queue.id + "'><button>Просмотр очереди</button></a>";
+
+                                var queue_title_text = ((queue.title != null) ? queue.title : "-");
+                                var queue_type_text = ((queue.type != 0) ? "да" : "нет");
+                                var queue_place_text = ((queue.place != 0) ? queue.place : "-");
+                                var row = "<tr>\
+                                        <td>" + queue.subject + "</td>\
+                                        <td>" + queue_title_text + "</td>\
+                                        <td>" + queue_type_text + "</td>\
+                                        <td>" + queue_place_text + "</td>\
+                                        <td>" + (queue.active ? "Активна" : "Не активна") + "</td>\
+                                        <td>\
+                                            " + actions + "\
+                                        </td>\
+                                    </tr>\
+                                ";
+                                console.log(row);
+                                $("#queueBody").append(row);
+                            });
+                        },
+                        error: function(xhr) {
+                            console.error('Ошибка при получении очередей:', xhr);
+                        }
+                    });
+                    setScrollBarMultiple("main", ["container"]);
+                }
+
+                // Запрашиваем задачи каждые 2 секунды
+                setInterval(fetchQueues, 2000);
+                // Первый вызов для загрузки данных сразу после загрузки страницы
+                fetchQueues();
+            </script>
+            <p>Данные о состоянии очередей обновляются каждые 2 секунды.</p>
+        </div>
+    </div>
+  </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{% static "css/register.css" %}" rel="stylesheet" type="text/css">
+    </head>
+    <script src="{% static "js/colors.js" %}"></script>
+    <body>
+        {% if info %}
+        <div class="colored_block green info">
+            {{ info }}
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="colored_block red error">
+            {{ error }}
+        </div>
+        {% endif %}
+        <div class="colored_block cyan form">
+            <h2>Вход в систему</h2>
+            <form id="loginForm" action="/authorize" method="POST">
+                {% csrf_token %}
+                <div class="form_row">
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                <br><br>
+                <div class="form_row">
+                    <label for="password">Пароль:</label>
+                    <input type="password" name="password" required>
+                </div>
+                <br><br>
+
+                <button type="submit">Войти</button><br>
+                <p class="small">Нет аккаунта? <a href="{{signup_link}}">Зарегистрироваться</a></p>
+            </form>
+        </div>
+    </body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

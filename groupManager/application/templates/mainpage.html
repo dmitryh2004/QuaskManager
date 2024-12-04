@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link href="{% static "css/mainpage.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<style>
+    ol li.not_tomorrow {
+        color: #888;
+    }
+</style>
+
+<body onload="init_check_queue(0); init_ping();">
+    <section id="main">
+        <section id="left">
+            <div class="colored_block cyan" id="profile_block">
+                {% if errors.profile %}
+                <img src="{% static 'media/img/profile-default.png'%}">
+                <div class="colored_block orange opaque" color_const>
+                    {{ errors.profile }}
+                </div>
+                {% else %}
+                <div id="profile_image_container">
+                    <img src="{% if path %}{{path}}{% else %}{% static 'media/img/profile-default.png'%}{% endif %}">
+                    <div class="colored_block red opaque" id="notifications_block" style="display: none;">
+                        <span id="notifications_count">{{ notifications_count }}</span>
+                    </div>
+                    <script>
+                        function countNotifications() {
+                            $.ajax({
+                                url: '{% url "notifications-count-rtu" current_user_id %}',
+                                method: 'GET',
+                                success: function(data) {
+                                    var count = data["notifications_count"];
+                                    var notifications_block = document.getElementById("notifications_block");
+                                    var notifications_count = document.getElementById("notifications_count");
+
+                                    if (count > 0) {
+                                        notifications_block.style.display = "block";
+                                        notifications_count.textContent = count;
+                                    }
+                                    else {
+                                        notifications_block.style.display = "none";
+                                    }
+                                }
+                            });
+                        }
+
+                        setInterval(countNotifications, 2000);
+                        countNotifications();
+                    </script>
+                </div>
+                <h2>{{ username }}</h2>
+                {% endif %}
+            </div>
+            <div class="colored_block cyan" id="schedule_block">
+                <h2>
+                    {% if role >= 4 %}
+                    Просмотр расписания
+                    {% else %}
+                    Ближайшие пары
+                    {% endif %}
+                </h2>
+                {% if errors.no_group %}
+                <div class="colored_block orange opaque" color_const>
+                    {{ errors.no_group }}
+                </div>
+                {% else %}
+                    <p>
+                    {% if role >= 4 %}
+                        {% if groups %}
+                        <form id="get_schedule" method="post" action="/schedule/view">
+                            {% csrf_token %}
+                            <label for="groupselect">Показать расписание группы: </label>
+                            <select id="groupselect" name="groupselect">
+                                {% for group in groups %}
+                                    <option value="{{ group.id }}">{{ group.name }}</option>
+                                {% empty %}
+                                {% endfor %}
+                            </select>
+                            <button type="submit">Перейти</button>
+                        </form>
+                        {% else %}
+                        <div>В базе данных нет ни одной группы.</div>
+                        {% endif %}
+                    {% else %}
+                        {% if pairs %}
+                            <ol>
+                        {% endif %}
+                        {% for pair in pairs %}
+                        <li {% if pair.not_tomorrow %} class="not_tomorrow" {%endif %}>
+                            <b>{{ pair.subject }} ({{ pair.date }}) </b><br>
+                            {{ pair.auditory }} ({{ pair.campus }}), {{ pair.pairType }}
+                        </li>
+                        {% empty %}
+                        В ближайшие 2 недели пар не ожидается.
+                        {% endfor %}
+                        {% if pairs %}
+                            </ol>
+                        {% endif %}
+                    </p>
+                    <a href="{{ schedule_link }}">К расписанию</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% if role <= 3 %}
+                <div class="colored_block cyan" id="queues_block">
+                    <h2>Ваши очереди</h2>
+                    {% if errors.no_group %}
+                    <div class="colored_block orange opaque" color_const>
+                        {{ errors.no_group }}
+                    </div>
+                    {% elif warnings.no_group %}
+                    <div class="colored_block cyan">
+                        {{ warnings.no_group }}
+                    </div>
+                    {% else %}
+                        <p id="queue_list_block">
+                            <ul id="queue_list">
+                            </ul>
+                            <span id="queue_list_empty">Сейчас вы не занимаете место ни в одной очереди.</span>
+                        </p>
+                        <a href="{% url 'queue-list' %}">К списку очередей</a>
+                        <script>
+                            var subjects = {};
+
+                            {% for subject in subjects %}
+                            subjects[{{subject.id}}] = "{{subject.name}}";
+                            {% endfor %}
+
+                            var group_id = {{ group_id }};
+                            var current_user_id = {{ current_user_id }};
+
+                            function fetchQueues() {
+                                $.ajax({
+                                    url: '{% url "queue-list-rtu" group_id current_user_id %}',
+                                    method: 'GET',
+                                    success: function(data) {
+                                        var queue_list_element = document.getElementById("queue_list");
+                                        var empty_message = document.getElementById("queue_list_empty");
+                                        var has_queue = false;
+                                        if (data.length == 0) {
+                                            queue_list_element.style.display = "none";
+                                            empty_message.style.display = "inline";
+                                        }
+                                        else {
+                                            queue_list_element.style.display = "block";
+                                            empty_message.style.display = "none";
+                                            $('#queue_list').empty(); // Очищаем текущее содержимое
+                                            data.forEach(function(queue) {
+                                                if (queue.place != 0) {
+                                                    has_queue = true;
+                                                    console.log(queue);
+                                                    var queue_title_text = ((queue.title != null) ? queue.title : "-");
+                                                    var queue_type_text = ((queue.type != 0) ? "да" : "нет");
+                                                    var item = "<li>";
+                                                    if (queue.title != null) {
+                                                        item += queue.title + " (";
+                                                    }
+                                                    else {
+                                                        item += "Очередь по предмету ";
+                                                    }
+                                                    item += queue.subject;
+                                                    if (queue.title != null) {
+                                                        item += ")";
+                                                    }
+                                                    item += " - " + queue.place + " место";
+                                                    if (queue.next) {
+                                                        item += " <b>(Вы следующий в очереди!)</b>";
+                                                    }
+                                                    item += "</li>";
+                                                    console.log(item);
+                                                    $("#queue_list").append(item);
+                                                }
+                                            });
+                                        }
+                                        if (!has_queue) {
+                                            queue_list_element.style.display = "none";
+                                            empty_message.style.display = "inline";
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        console.error('Ошибка при получении очередей:', xhr);
+                                    }
+                                });
+                            }
+
+                            // Запрашиваем задачи каждые 2 секунды
+                            setInterval(fetchQueues, 2000);
+                            // Первый вызов для загрузки данных сразу после загрузки страницы
+                            fetchQueues();
+                        </script>
+                        {% if role >= 2 %}
+                            <p><a href="{% url 'queue-edit' %}">Редактирование очередей</a></p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+            {% if role <= 3 %}
+                <div class="colored_block cyan" id="taken_tasks_block">
+                    <h2>Ваши задания</h2>
+                    {% if errors.no_group %}
+                    <div class="colored_block orange opaque" color_const>
+                        {{ errors.no_group }}
+                    </div>
+                    {% elif warnings.no_group %}
+                    <div class="colored_block cyan">
+                        {{ warnings.no_group }}
+                    </div>
+                    {% else %}
+                        <p>
+                            {% if tasks %}
+                                <ul>
+                                    {% for task in tasks %}
+                                        <li>{{ task.subject }} - {{ task.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                Сейчас у вас нет ни одного задания.
+                            {% endif %}
+                        </p>
+                        <p><a href="{% url 'tasks-list' %}">К списку заданий</a></p>
+                        {% if role >= 2 %}
+                            <p><a href="{% url 'task-edit' %}">Редактирование заданий</a></p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+        <section id="right">
+            <div class="colored_block cyan" id="news_block">
+                <h2>Новости</h2>
+                {% for item in news %}
+                <div class="colored_block cyan news_item">
+                    <b>{{ item.title }}</b><br>
+                    {{ item.date }}<br>
+                    {% autoescape off %}{{ item.shortdesc }}{% endautoescape %}<br>
+                    <a href="{% url 'news-show-1' item.id %}"><button>К новости</button></a>
+                </div>
+                <br>
+                {% empty %}
+                Нет общих новостей или новостей для вашей группы.<br>
+                {% endfor %}
+                <a href="{% url 'news-show' %}"><button>Все новости</button></a>
+                {% if role > 1 %}
+                    <br><a href="{% url 'news-create' %}"><button>Создать новость</button></a>
+                {% endif %}
+            </div>
+        </section>
+    </section>
+    {% include "footer_template.html" with link=about_link %}
+</body>
+<script>
+    setScrollBarMultiple("main", ["left", "right"]);
+    var profile_block = document.getElementById("profile_block");
+    profile_block.addEventListener("click", function() { window.location.href = '{% url 'profile' %}'; });
+</script>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

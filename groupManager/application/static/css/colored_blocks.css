@@ -1,0 +1,91 @@
+@import url("common.css");
+
+/* usage: 
+<html>
+...
+<element class="colored_block (color) (your classes)">
+</element>
+...
+</html>
+*/ 
+
+.colored_block {
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+    padding: 10px;
+}
+
+.red {
+    background-color: var(--light-theme-red-subtheme-color);
+    --selection-color: var(--light-theme-red-subtheme-selection-color);
+}
+
+.orange {
+    background-color: var(--light-theme-orange-subtheme-color);
+    --selection-color: var(--light-theme-orange-subtheme-selection-color);
+}
+
+.yellow {
+    background-color: var(--light-theme-yellow-subtheme-color);
+    --selection-color: var(--light-theme-yellow-subtheme-selection-color);
+}
+
+.green {
+    background-color: var(--light-theme-green-subtheme-color);
+    --selection-color: var(--light-theme-green-subtheme-selection-color);
+}
+
+.cyan {
+    background-color: var(--light-theme-cyan-subtheme-color);
+    --selection-color: var(--light-theme-cyan-subtheme-selection-color);
+}
+
+.blue {
+    background-color: var(--light-theme-blue-subtheme-color);
+    --selection-color: var(--light-theme-blue-subtheme-selection-color);
+}
+
+.purple {
+    background-color: var(--light-theme-purple-subtheme-color);
+    --selection-color: var(--light-theme-purple-subtheme-selection-color);
+}
+
+.red.opaque {
+    background-color: var(--light-theme-red-subtheme-color-opaque);
+    --selection-color: var(--light-theme-red-subtheme-selection-color);
+}
+
+.orange.opaque {
+    background-color: var(--light-theme-orange-subtheme-color-opaque);
+    --selection-color: var(--light-theme-orange-subtheme-selection-color);
+}
+
+.yellow.opaque {
+    background-color: var(--light-theme-yellow-subtheme-color-opaque);
+    --selection-color: var(--light-theme-yellow-subtheme-selection-color);
+}
+
+.green.opaque {
+    background-color: var(--light-theme-green-subtheme-color-opaque);
+    --selection-color: var(--light-theme-green-subtheme-selection-color);
+}
+
+.cyan.opaque {
+    background-color: var(--light-theme-cyan-subtheme-color-opaque);
+    --selection-color: var(--light-theme-cyan-subtheme-selection-color);
+}
+
+.blue.opaque {
+    background-color: var(--light-theme-blue-subtheme-color-opaque);
+    --selection-color: var(--light-theme-blue-subtheme-selection-color);
+}
+
+.purple.opaque {
+    background-color: var(--light-theme-purple-subtheme-color-opaque);
+    --selection-color: var(--light-theme-purple-subtheme-selection-color);
+}
+
+.selected {
+    background-color: var(--selection-color);
+    font-weight: bold;
+}

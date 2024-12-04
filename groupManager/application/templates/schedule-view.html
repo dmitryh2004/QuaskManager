@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание группы {{ groupname }}</title>
+    <link href="{% static "css/schedule.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<style>
+    table, tr, td, th {
+        border: 1px solid #000;
+        border-collapse: collapse;
+    }
+    table {
+        border-width: 2px;
+        width: 100%;
+        text-align: center;
+    }
+    tr:nth_child(7n+1) {
+        border-bottom-width: 2px;
+    }
+    td, th {
+        padding: 5px;
+    }
+    th.oneline {
+        white-space: nowrap;
+    }
+    td.current {
+        color: #ff0;
+    }
+    </style>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+    <section id="main">
+        {% if error %}
+        <div class="colored_block orange opaque">
+            {{error}}
+        </div>
+        {% else %}
+        <div class="colored_block cyan" id="schedule_block">
+            <h2>Расписание группы {{ groupname }}</h2>
+            <table>
+              <tr>
+                <th>Неделя</th>
+                <th>День</th>
+                {% for pn, pd in pairDuration.items %}
+                  <th class="oneline">Пара {{ pn }}<br>({{ pd.0 }} - {{ pd.1 }})</th>
+                {% endfor %}
+              </tr>
+              {% for even, week in schedule.items %}
+                <tr>
+                    <td rowspan="6">
+                      {% if even == 0 %}
+                      н/ч
+                      {% else %}
+                      ч
+                      {% endif %}
+                    </td>
+                    {% for weekday, weekday_value in week.items %}
+                    <td>
+                        {% for day, value in days.items %}
+                        {% if day == weekday %}
+                        {{ value }}
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                        {% for pairNumber, pair in weekday_value.items %}
+                        <td>
+                            {% if pair %}
+                                <u>{{pair.subject}}</u><br>
+                                {{pair.auditory}} ({{pair.campus}}), {{pair.pairType}}
+                            {% endif %}
+
+                            {% if role >= 4 or role == 3 and group == user_group %}
+                                <a href="{% url 'schedule-edit' group even weekday pairNumber %}">
+                                     <img class="ui tiny" src="{% static "media/img/icons/edit.png" %}">
+                                </a>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                    {% endfor %}
+                </tr>
+              {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+    </section>
+    {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBar("main", "schedule_block");
+</script>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Доступ запрещен</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/common.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "css/colored_blocks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="colored_block red opaque" style="padding: 10px; text-align: center;">
+        <p>
+          Доступ к странице запрещен: у вас недостаточно прав.
+        </p>
+        <a onclick="javascript:history.go(-1);"><button>Назад</button></a>
+    </div>
+</body>
+</html>

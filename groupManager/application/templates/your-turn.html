@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пришла ваша очередь!</title>
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_ping();">
+    <section id="main">
+        <div id="container">
+            <div class="colored_block cyan">
+                <h2>Ваша очередь!</h2>
+                <b>Очередь:</b> {% if queue.title %}{{queue.title}}{% else %}(нет названия){% endif %}<br>
+                <b>Предмет:</b> {{queue.subject}}<br>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="number" name="entry_id" value="{{entry_id}}" hidden>
+                    {% if answering %}
+                        Нажмите кнопку "Ответил", когда закончите с ответом.
+                        <button type="submit" name="option" value="3">Ответил</button>
+                    {% else %}
+                        <button type="submit" name="option" value="1">Иду</button>
+                        <button type="submit" name="option" value="2">Не иду</button>
+                    {% endif %}
+                </form>
+
+                {% if not answering %}
+                    <b id="warning">Через {{timeout}} секунд будет автоматически выбран вариант "Не иду".</b>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</body>
+{% if not answering %}
+    <script>
+        function getSecondEnding(seconds) {
+            if (seconds % 10 === 1 && seconds % 100 !== 11) {
+                return 'секунду';
+            } else if ((seconds % 10 >= 2 && seconds % 10 <= 4) && (seconds % 100 < 12 || seconds % 100 > 14)) {
+                return 'секунды';
+            } else {
+                return 'секунд';
+            }
+        }
+
+        let timeout = {{ timeout }};
+
+        // Функция для автоматической отправки формы
+        function autoSubmit() {
+            // Находим кнопку "Не иду" по её значению
+            const button = document.querySelector('button[name="option"][value="2"]');
+            if (button) {
+                button.click(); // Симулируем клик по кнопке
+            }
+        }
+
+        // Отправка формы через 10 секунд
+        setTimeout(autoSubmit, 1000 * timeout);
+
+        function updateWarning() {
+            const warningElement = document.getElementById("warning");
+            if (timeout > 0) {
+                timeout--;
+                warningElement.textContent = 'Через ' + timeout + ' ' + getSecondEnding(timeout) + ' будет автоматически выбран вариант "Не иду".';
+            }
+            else {
+                clearInterval(warningInterval);
+            }
+        }
+
+        const warningInterval = setInterval(updateWarning, 1000);
+
+        window.addEventListener('beforeunload', function () {
+            // Находим кнопку "Не иду" по её значению
+            const button = document.querySelector('button[name="option"][value="2"]');
+            if (button) {
+                button.click(); // Симулируем клик по кнопке
+            }
+        });
+    </script>
+{% else %}
+<script>
+    window.addEventListener('beforeunload', function () {
+        // Находим кнопку "Не иду" по её значению
+        const button = document.querySelector('button[name="option"][value="3"]');
+        if (button) {
+            button.click(); // Симулируем клик по кнопке
+        }
+    });
+</script>
+{% endif %}
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование очередей группы {{ groupname }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+          <div id="container">
+              {% if info %}
+                  <div class="colored_block green">
+                      {{ info }}
+                  </div>
+              {% endif %}
+              {% if error %}
+                  <div class="colored_block orange opaque">
+                      {{ error }}
+                  </div>
+              {% endif %}
+            <div class="colored_block cyan">
+              <h2>Очереди в группе {{ groupname }}</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Предмет</th>
+                    <th>Название</th>
+                    <th>Можно записаться самому</th>
+                    <th>Активна</th>
+                    <th>Таймаут</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for queue in queues %}
+                    <tr>
+                      <td>{{queue.id}}</td>
+                      <td>{{queue.subject}}</td>
+                      <td>{% if queue.title %}{{queue.title}}{% else %}-{% endif %}</td>
+                      <td>{% if queue.type == 1 %}да{% else %}нет{% endif %}</td>
+                      <td>{% if queue.active %}да{% else %}нет{% endif %}</td>
+                      <td>{{queue.timeout}}</td>
+                      <td>
+                        <a href="{% url 'queue-show' queue.id %}"><button>Просмотр очереди</button></a>
+                        <a href="{% url 'queue-settings' queue.id %}"><button>Настройки</button></a>
+                        <a href="{% url 'queue-delete' queue.id %}"><button>Удалить очередь</button></a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <a href="{% url 'queue-create' %}"><button>Новая очередь</button></a>
+            </div>
+          </div>
+  </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

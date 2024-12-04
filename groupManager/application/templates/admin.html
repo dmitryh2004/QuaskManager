@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Администраторская</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/admin.css" %}" rel="stylesheet" type="text/css">
+</head>
+
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<body>
+    <section id="main">
+        <div id="container" class="small">
+            <div class="colored_block cyan" id="admin_list">
+                <h2>Список администраторов</h2>
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя пользователя</th>
+                        <th>Последний вход в систему</th>
+                    </tr>
+                    {% for admin in admin_list %}
+                    <tr {% if user_id == admin.id %}class="its-you"{% endif %}>
+                        <td>{{admin.id}}</td>
+                        <td>{{admin.username}}</td>
+                        <td>
+                            {% if admin.last_login %}
+                                {{admin.last_login}}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <div class="colored_block cyan" id="db-edit-block">
+                <h2>Редактирование названий</h2>
+                <p><a href="{% url 'admin-db-edit' 'group' %}"><button>Редактирование групп</button></a></p>
+                <p><a href="{% url 'admin-db-edit' 'subject' %}"><button>Редактирование предметов</button></a></p>
+                <p><a href="{% url 'admin-db-edit' 'auditory' %}"><button>Редактирование аудиторий</button></a></p>
+                <p><a href="{% url 'admin-db-edit' 'campus' %}"><button>Редактирование корпусов</button></a></p>
+                <div class="colored_block orange opaque">
+                    Внимание! Изменение базы данных напрямую может привести к нестабильной работе сайта. Продолжайте только в случае, если знаете, что делаете.
+                </div>
+                <p><a href="{% url 'admin-db-edit-default' %}"><button>Редактирование базы данных</button></a></p>
+            </div>
+            <div class="colored_block cyan" id="user-management-block">
+                <h2>Управление пользователями</h2>
+                <h3>Назначение групп</h3>
+                <p>
+                    Присваивайте пользователям группу, чтобы они могли видеть свое расписание и пользоваться очередями и заданиями.
+                </p>
+                <h3>Назначение ролей</h3>
+                <p>
+                    Изменяйте права пользователей сайта, назначая их на одну из доступных ролей.<br>
+                    Вы можете выдать следующие роли:
+                    <ul>
+                        {% for role in roles %}
+                        <li><b>{{role.name}}</b><br>{{role.desc}}</li>
+                        {% empty %}
+                        Нет доступных ролей для выдачи.
+                        {% endfor %}
+                    </ul>
+                </p>
+                <div class="colored_block orange opaque">
+                    Внимание! Не раздавайте права кому попало - это может привести к нежелательным последствиям.
+                </div>
+                <p><a href="{% url 'admin-user-management' %}"><button>Управление пользователями</button></a></p>
+            </div>
+        </div>
+    </section>
+    {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBar("main", "container");
+</script>
+</html>

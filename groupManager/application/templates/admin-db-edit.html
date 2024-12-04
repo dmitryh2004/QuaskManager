@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование базы данных{% if table_name %} - {{table_name}}{% endif %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/admin.css" %}" rel="stylesheet" type="text/css">
+</head>
+
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<style>
+    div#table_select {
+        margin: 10px auto;
+        width: 100%;
+        display: grid;
+        justify-items: center;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    div#table_select button {
+        background-color: #ddd;
+    }
+
+    div#table_select button.not_recommended {
+        background-color: #f80;
+    }
+</style>
+<body>
+    <section id="main">
+        <div id="container">
+            {% if info %}
+                <div class="colored_block green">
+                    {{ info }}
+                </div>
+            {% endif %}
+            {% if table_name %}
+            <div class="colored_block cyan" id="table-edit">
+                <h2>Таблица {{table_name}}</h2>
+                <table>
+                    <tr>
+                        {% for item in header %}
+                        <th>{{item}}</th>
+                        {% endfor %}
+                        <th>Действия</th>
+                    </tr>
+                    {% for object in objects %}
+                    <tr>
+                        {% for key, value in object.items %}
+                        <td>{{value}}</td>
+                        {% endfor %}
+                        <td>
+                            {% if table_name == 'user' and object.id == user_id %}
+                                <b>Это вы</b>
+                            {% else %}
+                                <a href="{% url 'admin-db-update' table_name object.id %}"><button>Редактировать</button></a>
+                                <a href="{% url 'admin-db-delete' table_name object.id %}"><button>Удалить</button></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <a href="{% url 'admin-db-create' table_name %}"><button>Добавить новую запись</button></a>
+                {% if total_pages > 1 %}
+                <p class="divider"></p>
+                <div class="pagination">
+                    <p>Навигация по таблице</p>
+                    <table class="pagination">
+                        <tr>
+                            {% if page > 1 %}
+                                {% with prev=page|add:"-1" %}
+                                    {% if prev > 1 %}
+                                        <td>
+                                            <a href="{% url 'admin-db-edit-page' table_name 1 %}">
+                                                1
+                                            </a>
+                                        </td>
+                                        <td>...</td>
+                                    {% endif %}
+                                    <td>
+                                        <a href="{% url 'admin-db-edit-page' table_name prev %}">
+                                            {{prev}}
+                                        </a>
+                                    </td>
+                                {% endwith %}
+                            {% endif %}
+                            <td>{{page}}</td>
+                            {% if page < total_pages %}
+                                {% with next=page|add:"1" %}
+                                    <td>
+                                        <a href="{% url 'admin-db-edit-page' table_name next %}">
+                                            {{next}}
+                                        </a>
+                                    </td>
+                                    {% if next < total_pages %}
+                                        <td>...</td>
+                                        <td>
+                                            <a href="{% url 'admin-db-edit-page' table_name total_pages %}">
+                                                {{total_pages}}
+                                            </a>
+                                        </td>
+                                    {% endif %}
+                                {% endwith %}
+                            {% endif %}
+                        </tr>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="colored_block cyan" id="navigation">
+                <h2>Редактирование базы данных</h2>
+                <p>Выберите одну из таблиц для редактирования.</p>
+                {% if role == 5 %}
+                <div class="colored_block orange opaque">
+                    Внимание! Не рекомендуется изменять таблицы в оранжевых кнопках без крайней необходимости - это может привести к нестабильной работе сайта.
+                </div>
+                {% endif %}
+                <div id="table_select">
+                    <a href="{% url 'admin-db-edit' 'group' %}"><button>Группы</button></a>
+                    <a href="{% url 'admin-db-edit' 'auditory' %}"><button>Аудитории</button></a>
+                    <a href="{% url 'admin-db-edit' 'subject' %}"><button>Предметы</button></a>
+                    <a href="{% url 'admin-db-edit' 'campus' %}"><button>Корпуса</button></a>
+                    {% if role == 5 %}
+                    <a href="{% url 'admin-db-edit' 'user' %}"><button class="not_recommended">Пользователи</button></a>
+                    <a href="{% url 'admin-db-edit' 'authorize' %}"><button class="not_recommended">Авторизация</button></a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBar("main", "container");
+</script>
+</html>

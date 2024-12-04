@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ groupname }} - изменение задания</title>
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+    <section id="main">
+        <div id="container">
+            {% if error %}
+                <div class="colored_block red">
+                    {{error}}
+                </div>
+            {% else %}
+                {% if info %}
+                    <div class="colored_block green">
+                        {{info}}
+                    </div>
+                {% endif %}
+                <div class="colored_block cyan">
+                    <h2>Изменение задания в группе {{ groupname }}</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <p>
+                            <label for="taskname">Название:</label>
+                            <input type="text" id="taskname" name="taskname" value="{{task.name}}" required>
+                        </p>
+                        <p>
+                            <input type="checkbox" id="completed" name="completed" value="1" {% if task.state == 1 %} checked{% endif %}>
+                            Выполнено
+                        </p>
+                        <p>
+                            {% if subjects %}
+                                <label for="subjectSelect">Предмет:</label>
+                                <select id="subjectSelect" name="subjectSelect" required>
+                                    <option value="0" disabled selected>-- Выберите предмет --</option>
+                                    {% for subject in subjects %}
+                                        <option value="{{subject.id}}"{% if task.subject == subject.id %} selected{% endif %}>{{subject.name}}</option>
+                                    {% endfor %}
+                                </select>
+                                </p>
+                                <p>
+                                    <button type="submit">Сохранить</button>
+                            {% else %}
+                                В расписании вашей группы нет ни одного предмета. Обратитесь к администратору для решения этой проблемы.
+                            {% endif %}
+                        </p>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ username }} - уведомления ({{ notif_count }})</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/profile.css" %}" rel="stylesheet" type="text/css">
+</head>
+<style>
+  div#divider {
+    background-color: #000;
+    height: 2px;
+    width: auto;
+    margin: 10px 0;
+  }
+
+  div.notification {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  div.notification img {
+    border-radius: 25%;
+    width: 128px;
+    height: 128px;
+  }
+
+  div#notification_block {
+    position: relative;
+  }
+
+  div#switch {
+    float: right;
+    margin-left: auto;
+    width: fit-content;
+    position: sticky;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+  }
+</style>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+    <section id="main">
+        <div id="container">
+          <div class="colored_block cyan" id="notification_block">
+              <div class="colored_block cyan opaque" id="switch">
+                  <input type="checkbox" id="toggleButton"> Только важные уведомления
+              </div>
+            <h2>Непрочитанные уведомления</h2>
+            {% for notif in unseen %}
+              <div class="colored_block cyan notification n{{notif.type}}">
+                  {% for user in users %}
+                    {% if user.id == notif.sender %}
+                      <img src="{% if user.image %}{{ user.image }}{% else %}{% static 'media/img/profile-default.png'%}{% endif %}">
+                      <div class="notification-right">
+                          <p><b>Отправитель: {{user.name}}</b></p>
+                          <p><b>Время отправки: {{notif.date}}</b></p>
+                          {% for key, value in notif_types.items %}
+                            {% if key == notif.type %}
+                                {% if notif.type == 1 %}<b>{% endif %}
+                                {{value}}
+                                {% if notif.type == 1 %}</b>{% endif %}
+                            {% endif %}
+                          {% endfor %}
+                          <p>{{notif.text}}</p>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+              </div>
+            {% empty %}
+            Нет новых уведомлений.
+            {% endfor %}
+            {% if seen %}
+                <div id="divider"></div>
+                {% for notif in seen %}
+                    <div class="colored_block cyan notification n{{notif.type}}">
+                      {% for user in users %}
+                        {% if user.id == notif.sender %}
+                          <img src="{% if user.image %}{{ user.image }}{% else %}{% static 'media/img/profile-default.png'%}{% endif %}">
+                          <div class="notification-right">
+                              <p>Отправитель: {{user.name}}</p>
+                              <p>Время отправки: {{notif.date}}</p>
+                              {% for key, value in notif_types.items %}
+                                {% if key == notif.type %}
+                                    {% if notif.type == 1 %}<b>{% endif %}
+                                    {{value}}
+                                    {% if notif.type == 1 %}</b>{% endif %}
+                                {% endif %}
+                              {% endfor %}
+                              <p>{{notif.text}}</p>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+    </section>
+    {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+<script>
+    document.getElementById('toggleButton').onclick = function() {
+        const elements = document.querySelectorAll('.n0');
+        elements.forEach(element => {
+            if (element.style.display === 'none') {
+                element.style.display = 'flex';
+            } else {
+                element.style.display = 'none';
+            }
+        });
+    };
+</script>
+</html>

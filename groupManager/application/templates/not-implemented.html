@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/common.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "css/colored_blocks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="colored_block orange" style="padding: 10px; text-align: center;" color_const>
+        <p>
+          В данный момент эта опция недоступна для использования. Она будет доступна по мере разработки сайта.
+        </p>
+        {% if back_link %}
+        <a href="{{ back_link }}"><button>Назад</button></a>
+        {% else %}
+        <a onclick="javascript:history.go(-1);"><button>Назад</button></a>
+        {% endif %}
+    </div>
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

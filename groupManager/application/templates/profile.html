@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ username }} - профиль</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/profile.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+    <section id="main">
+        <div id="container">
+            {% if error %}
+            <div class="colored_block orange opaque">
+                {{ error }}
+            </div>
+            {% endif %}
+            <div class="colored_block cyan profile_block">
+                <div class="profile_name">
+                    <img id="profile_photo" src="{% if path %}{{path}}{% else %}{% static 'media/img/profile-default.png'%}{% endif %}">
+                    <h1>{{ username }}</h1>
+                    <a href="{% url 'profile-edit' %}">
+                        <img class="ui small" src="{% static 'media/img/icons/edit.png' %}">
+                    </a>
+                </div>
+                <div class="profile_name_right">
+                    {% if role >= 4 %}
+                    <figure>
+                        <a href="{% url 'admin' %}">
+                            <img class="ui" src="{% static 'media/img/icons/admin.png' %}">
+                        </a>
+                        <figcaption>Администрирование</figcaption>
+                    </figure>
+                    {% endif %}
+                    {% if role == 3 %}
+                    <figure>
+                        <a href="{% url 'profile-group-management' %}">
+                            <img class="ui" src="{% static 'media/img/icons/group-management.png' %}">
+                        </a>
+                        <figcaption>Управление группой</figcaption>
+                    </figure>
+                    {% endif %}
+                    <figure>
+                        <div id="profile_image_container">
+                            <a href="{% url 'profile-notifications' %}">
+                                <img class="ui" src="{% static 'media/img/icons/notification-bell.png' %}">
+                            </a>
+                            <div class="colored_block red opaque" id="notifications_block" style="display: none;">
+                                <span id="notifications_count">{{ notifications_count }}</span>
+                            </div>
+                            <script>
+                                function countNotifications() {
+                                    $.ajax({
+                                        url: '{% url "notifications-count-rtu" current_user_id %}',
+                                        method: 'GET',
+                                        success: function(data) {
+                                            var count = data["notifications_count"];
+                                            var notifications_block = document.getElementById("notifications_block");
+                                            var notifications_count = document.getElementById("notifications_count");
+
+                                            if (count > 0) {
+                                                notifications_block.style.display = "block";
+                                                notifications_count.textContent = count;
+                                            }
+                                            else {
+                                                notifications_block.style.display = "none";
+                                            }
+                                        }
+                                    });
+                                }
+
+                                setInterval(countNotifications, 2000);
+                                countNotifications();
+                            </script>
+                        </div>
+                        <figcaption>Уведомления</figcaption>
+                    </figure>
+                    <figure>
+                        <a href="{% url 'profile-settings' %}">
+                            <img class="ui" src="{% static 'media/img/icons/settings.png' %}">
+                        </a>
+                        <figcaption>Настройки</figcaption>
+                    </figure>
+                    <figure>
+                        <a href="{% url 'logout' %}">
+                            <img class="ui" src="{% static 'media/img/icons/logout.png' %}">
+                        </a>
+                        <figcaption>Выйти из профиля</figcaption>
+                    </figure>
+                </div>
+                <div class="profile_info">
+                    <b>Роль:</b> {{ role_name }}<br>
+                    <b>Описание роли:</b><br> {% autoescape off %}{{ role_desc }}{% endautoescape %}<br>
+                    <b>Группа:</b> {{ groupname }}<br>
+
+                    {% if role <= 3 %}
+                    <h4>Ваши очереди</h4>
+                    <p id="queue_list_block">
+                        <ul id="queue_list">
+                        </ul>
+                        <span id="queue_list_empty">Сейчас вы не занимаете место ни в одной очереди.</span>
+                    </p>
+                    <script>
+                        var subjects = {};
+
+                        {% for subject in subjects %}
+                        subjects[{{subject.id}}] = "{{subject.name}}";
+                        {% endfor %}
+
+                        var group_id = {{ group_id }};
+                        var current_user_id = {{ current_user_id }};
+
+                        function fetchQueues() {
+                            $.ajax({
+                                url: '{% url "queue-list-rtu" group_id current_user_id %}',
+                                method: 'GET',
+                                success: function(data) {
+                                    var queue_list_element = document.getElementById("queue_list");
+                                    var empty_message = document.getElementById("queue_list_empty");
+                                    var has_queue = false;
+                                    if (data.length == 0) {
+                                        queue_list_element.style.display = "none";
+                                        empty_message.style.display = "inline";
+                                    }
+                                    else {
+                                        queue_list_element.style.display = "block";
+                                        empty_message.style.display = "none";
+                                        $('#queue_list').empty(); // Очищаем текущее содержимое
+                                        data.forEach(function(queue) {
+                                            if (queue.place != 0) {
+                                                has_queue = true;
+                                                console.log(queue);
+                                                var queue_title_text = ((queue.title != null) ? queue.title : "-");
+                                                var queue_type_text = ((queue.type != 0) ? "да" : "нет");
+                                                var item = "<li>";
+                                                if (queue.title != null) {
+                                                    item += queue.title + " (";
+                                                }
+                                                else {
+                                                    item += "Очередь по предмету ";
+                                                }
+                                                item += queue.subject;
+                                                if (queue.title != null) {
+                                                    item += ")";
+                                                }
+                                                item += " - " + queue.place + " место";
+                                                if (queue.next) {
+                                                    item += " <b>(Вы следующий в очереди!)</b>";
+                                                }
+                                                item += "</li>";
+                                                console.log(item);
+                                                $("#queue_list").append(item);
+                                            }
+                                        });
+                                    }
+                                    if (!has_queue) {
+                                        queue_list_element.style.display = "none";
+                                        empty_message.style.display = "inline";
+                                    }
+                                },
+                                error: function(xhr) {
+                                    console.error('Ошибка при получении очередей:', xhr);
+                                }
+                            });
+                        }
+
+                        // Запрашиваем задачи каждые 2 секунды
+                        setInterval(fetchQueues, 2000);
+                        // Первый вызов для загрузки данных сразу после загрузки страницы
+                        fetchQueues();
+                    </script>
+                    <h4>Ваши задания</h4>
+                        {% if tasks %}
+                            <ul>
+                                {% for task in tasks %}
+                                    <li>{{ task.subject }} - {{ task.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            Сейчас у вас нет ни одного задания.
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

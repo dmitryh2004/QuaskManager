@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление ролями пользователей</title>
+    <link href="{% static "css/profile.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script>
+  function toggleGroupSelection(id) {
+    const roleSelect = document.getElementById('role_' + id);
+    const groupSelect = document.getElementById('group_' + id);
+
+    // Блокируем выбор группы, если выбрана роль с ID 4 или 5
+    if (roleSelect.value === '4' || roleSelect.value === '5') {
+        groupSelect.disabled = true; // Блокируем выбор
+        groupSelect.value = 0; // Сбрасываем выбор
+    } else {
+        groupSelect.disabled = false; // Разблокируем выбор
+    }
+  }
+</script>
+<style>
+  div.name_and_image {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+  }
+
+  img.user_photo {
+    width: 64px;
+    height: 64px;
+    margin: 10px;
+    border-radius: 25%;
+  }
+
+  .not_recommended {
+    background-color: #f80;
+  }
+</style>
+{% if user_role <= 3 %}
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+{% endif %}
+<body{% if user_role <= 3 %} onload="init_check_queue(0); init_ping();"{% endif %}>
+  <section id="main">
+    <div id="container">
+      {% if error %}
+        <div class="colored_block orange opaque" color_const>
+            {{error}}
+        </div>
+      {% else %}
+        {% if info %}
+          <div class="colored_block green" color_const>
+              {{info}}
+          </div>
+        {% elif user_error %}
+          <div class="colored_block red" color_const>
+              {{user_error}}
+          </div>
+        {% endif %}
+        <div class="colored_block cyan" id="user-management-block">
+          <h2>Управление ролями пользователей</h2>
+          <form method="post" action="{% url um_handler %}" id="user_management_form">
+            {% csrf_token %}
+            {% if users %}
+            <table>
+              <colgroup>
+                <col style="width: fit-content;">
+                <col style="width: auto;">
+                <col style="width: fit-content;">
+                <col style="width: 15%;">
+              </colgroup>
+              <tr>
+                <th>ID</th>
+                <th>Имя пользователя</th>
+                <th>Группа</th>
+                <th>Роль</th>
+              </tr>
+              {% for user in users %}
+              <tr>
+                <td>{{user.id}}</td>
+                <td>
+                  <div class="name_and_image">
+                    <img class="user_photo" src="{% if user.image %}{{user.image}}{% else %}{% static 'media/img/profile-default.png'%}{% endif %}">
+                    <p>{{user.name}}</p>
+                  </div>
+                </td>
+                <td>
+                  <select id="group_{{user.id}}" name="group_{{user.id}}" required>
+                    <option value="0" selected>Нет группы</option>
+                    {% for group in groups %}
+                      <option value="{{group.id}}"{% if group.id == user.group_id %}selected{% endif %}>{{group.name}}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <select id="role_{{user.id}}" name="role_{{user.id}}" required onchange="toggleGroupSelection({{user.id}});">
+                    {% for role in roles %}
+                      <option value="{{role.id}}"{% if role.id == user.role %}selected{% endif %}>{{role.name}}</option>
+                    {% endfor %}
+                  </select>
+                  {% if user.role == 2 and user_role == 3 %}
+                    <br><a href="{% url 'give-leadership' user.id %}"><button type="button" class="not_recommended">Передать роль старосты</button></a>
+                  {% endif %}
+                  {% if user.role == 4 and user_role == 5 %}
+                  <br><a href="{% url 'give-main-admin' user.id %}"><button type="button" class="not_recommended">Передать роль главного администратора</button></a>
+                  {% endif %}
+                </td>
+              </tr>
+              <script>toggleGroupSelection({{user.id}});</script>
+              {% endfor %}
+            </table>
+            <button type="submit">Сохранить</button>
+            {% else %}
+            <p>Вы не можете изменить чью-либо роль: в базе данных нет аккаунтов без группы, а в вашей группе нет людей.</p>
+            {% endif %}
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+  {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+<script>
+    setScrollBar("main", "container");
+</script>
+{% if user_role != 3 %}
+<script>
+  const group_names = {}, user_names = {};
+  {% for group in groups %}
+    group_names[{{group.id}}] = "{{group.name}}";
+  {% endfor %}
+  {% for user in users %}
+    user_names[{{user.id}}] = "{{user.name}}";
+  {% endfor %}
+  var form = document.getElementById("user_management_form");
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const users = {};
+    const group_roles_count = {};
+
+    var userID, group, role;
+
+    {% for user in users %}
+      userID = {{ user.id }};
+      group = document.getElementById("group_{{ user.id }}").value;
+      role = document.getElementById("role_{{ user.id }}").value;
+
+      users[userID] = {"group": group, "role": role};
+      if (!group_roles_count[group]) {
+        group_roles_count[group] = 0;
+      }
+
+      if (role == 3) {
+        group_roles_count[group]++;
+      }
+    {% endfor %}
+
+    var groups_with_2_leaders = {};
+    var groups_with_0_leaders = [];
+
+    for (const group in group_roles_count) {
+      if ((group_roles_count[group] == 0) && (group != 0)) {
+        groups_with_0_leaders.push(group);
+      }
+      else if ((group_roles_count[group] >= 2) && (group != 0)) {
+        var conflicting_users = [];
+
+        for (const user in users) {
+          if ((users[user]["group"] == group) && (users[user]["role"] == 3)) {
+            conflicting_users.push(user);
+          }
+        }
+
+        groups_with_2_leaders[group] = conflicting_users;
+      }
+    }
+
+    console.log(users);
+    console.log(group_roles_count);
+    console.log(groups_with_0_leaders);
+    console.log(groups_with_2_leaders);
+
+    if (Object.keys(groups_with_2_leaders).length > 0) {
+      var error_text = "Следующие группы имеют несколько старост:\n";
+      for (const group in groups_with_2_leaders) {
+        var error_1 = group_names[group] + " - ";
+        var count = 0;
+        for (const user1 in groups_with_2_leaders[group]) {
+          console.log(user_names[groups_with_2_leaders[group][user1]] + " is a leader in " + group_names[group]);
+          error_1 += user_names[groups_with_2_leaders[group][user1]] + "(id=" + groups_with_2_leaders[group][user1] + "), ";
+          count++;
+        }
+        error_1 += "общее количество: " + count;
+        error_text += error_1 + "\n";
+      }
+      error_text += "Устраните конфликты и попробуйте снова.";
+      alert(error_text);
+    }
+    else if (groups_with_0_leaders.length > 0) {
+      var confirmation_text = "Следующим группам не назначены старосты:\n";
+      for (const group in groups_with_0_leaders) {
+        confirmation_text += group_names[groups_with_0_leaders[group]] + "\n";
+      }
+      confirmation_text += "Вы или другой администратор можете назначить их позднее. Желаете продолжить?";
+      const confirmContinue = confirm(confirmation_text);
+
+      if (confirmContinue) {
+        this.submit();
+      }
+    }
+    else {
+      this.submit();
+    }
+  });
+</script>
+{% endif %}
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>

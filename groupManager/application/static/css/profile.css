@@ -1,0 +1,85 @@
+@import url("common.css");
+@import url("colored_blocks.css");
+
+section#main {
+    display: grid;
+    grid-template-rows: auto;
+    width: calc(100% - 20px);
+    height: /*calc(100% - 4em - 20px)*/auto;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}
+
+div.profile_block {
+    padding: 10px;
+    display: grid;
+    grid-template-areas: "profile_name profile_name_right"
+    "info info";
+    grid-template-rows: repeat(2, auto);
+    gap: 20px;
+    align-items: center;
+}
+
+div.profile_name {
+    display: flex;
+    grid-area: profile_name;
+    gap: 20px;
+    align-items: center;
+    justify-content: start;
+}
+
+div.profile_name_right {
+    display: flex;
+    grid-area: profile_name_right;
+    gap: 20px;
+    align-items: center;
+    justify-content: end;
+}
+
+div.profile_info {
+    grid-area: info;
+}
+
+div.profile_block img#profile_photo {
+    width: 256px;
+    height: 256px;
+    border-radius: 25%;
+    border: 1px solid #000;
+}
+
+p.divider {
+    width: 0px;
+    height: 100%;
+    border: 1px solid #000;
+}
+
+div.footer {
+    width: calc(100% + 20px);
+    border-radius: 0px !important;
+    position: fixed;
+    height: 4em;
+    bottom: 0px;
+    left: -10px;
+    text-align: center;
+
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    align-items: center;
+}
+
+figure {
+    text-align: center;
+    font-size: 75%;
+    margin: 0;
+}
+
+div#profile_image_container {
+    position: relative;
+}
+
+div#notifications_block {
+    position: absolute;
+    top: 0;
+    right: 0;
+}

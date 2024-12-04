@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать новость</title>
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+    <script src="{% static 'tinymce/tinymce.min.js' %}"></script>
+</head>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+<section id="main">
+        <div id="container">
+            {% if info %}
+            <div class="colored_block green">
+                {{ info }}
+            </div>
+            {% endif %}
+            {% if error %}
+            <div class="colored_block orange opaque">
+                {{ error }}
+            </div>
+            {% endif %}
+          <div class="colored_block cyan">
+            <h2>Создать новость</h2>
+            <form method="POST">
+                {% csrf_token %}
+
+                <label for="title">Название:</label><br>
+                <input type="text" id="title" name="title" required><br><br>
+
+                <label for="shortdesc">Краткое содержание:</label><br>
+                <textarea id="shortdesc" name="shortdesc"></textarea><br><br>
+
+                <label for="content">Полное содержание:</label><br>
+                <textarea id="content" name="content"></textarea><br><br>
+
+
+                {% if role >= 4 %}
+                <label for="groups">Группы:</label><br>
+                {% endif %}
+                <select id="groups" name="groups" multiple {% if role <= 3 %}hidden {% endif %}>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}"{% if role <= 3 %} selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+                {% if role >= 4 %}<br><br>{% endif %}
+                {% if role >= 4 %}
+                    <label for="all">все группы</label>
+                    <input type="checkbox" id="all" name="all">
+                {% endif %}
+
+                <button type="submit">Сохранить новость</button>
+            </form>
+          </div>
+        </div>
+</section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+
+<script>
+tinymce.init({
+  selector: '#shortdesc',
+  plugins: '',
+  toolbar: 'undo redo | bold italic',
+  height: 400,
+});
+tinymce.init({
+  selector: '#content',
+  plugins: 'link image',
+  toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | link image',
+  height: 400,
+});
+setTimeout(function() {
+    setScrollBarMultiple("main", ["container"]);
+}, 1000);
+</script>
+</html>

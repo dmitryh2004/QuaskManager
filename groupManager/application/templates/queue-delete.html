@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Удаление очереди {{ queue.title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/tasks.css" %}" rel="stylesheet" type="text/css">
+</head>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+          <div id="container">
+              {% if info %}
+                  <div class="colored_block green">
+                      {{ info }}
+                  </div>
+              {% endif %}
+              {% if error %}
+                  <div class="colored_block orange opaque">
+                      {{ error }}
+                  </div>
+              {% endif %}
+            <div class="colored_block cyan">
+                <h2>Удаление очереди</h2>
+              <form method="post">
+                {% csrf_token %}
+
+                <p>Вы действительно хотите удалить очередь {% if queue.title %}{{ queue.title }} ({{queue.subject}}){% else %}Очередь по предмету {{ queue.subject }}{% endif %}?</p>
+
+                <button type="submit">Удалить</button>
+              </form>
+            </div>
+          </div>
+  </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBarMultiple("main", ["container"]);
+</script>
+</html>

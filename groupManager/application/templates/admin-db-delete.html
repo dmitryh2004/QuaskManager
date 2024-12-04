@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Удаление записи из таблицы {{table_name}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static "css/admin.css" %}" rel="stylesheet" type="text/css">
+</head>
+
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<style>
+    div#table_select {
+        width: 100%;
+        display: grid;
+        justify-items: center;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    div#table_select button {
+        background-color: #ddd;
+    }
+
+    div#table_select button.not_recommended {
+        background-color: #f80;
+    }
+</style>
+<body>
+    <section id="main">
+        <div id="container">
+          {% if error %}
+            <div class="colored_block orange opaque">
+              {{error}}
+            </div>
+          {% else %}
+            {% if info %}
+              <div class="colored_block green">
+                {{info}}
+              </div>
+            {% endif %}
+            <div class="colored_block cyan" id="update_block">
+              <h2>Удаление объекта {{ table_name }} с id={{object_id}}</h2>
+              <form method="post">
+                  {% csrf_token %}
+                  <p>Вы действительно хотите удалить этот объект?</p>
+
+                  <input type="submit" value="Удалить">
+              </form>
+            </div>
+          {% endif %}
+        </div>
+    </section>
+{% include "footer_template.html" with link=about_link back_link=back_link %}
+<script>
+function toggleGroupSelection() {
+    const roleSelect = document.getElementById('role');
+    const groupSelect = document.getElementById('groupID');
+
+    // Блокируем выбор группы, если выбрана роль с ID 4 или 5
+    if (roleSelect.value === '4' || roleSelect.value === '5') {
+        groupSelect.disabled = true; // Блокируем выбор
+        groupSelect.value = 0; // Сбрасываем выбор
+    } else {
+        groupSelect.disabled = false; // Разблокируем выбор
+    }
+}
+
+// Инициализация состояния при загрузке страницы
+document.addEventListener('DOMContentLoaded', toggleGroupSelection);
+</script>
+</body>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+<script>
+    setScrollBar("main", "container");
+</script>
+</html>

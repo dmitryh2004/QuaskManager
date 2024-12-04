@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки профиля</title>
+    <link href="{% static "css/profile.css" %}" rel="stylesheet" type="text/css">
+</head>
+<style>
+  div.example {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  div.radio_table {
+    width: fit-content;
+    display: grid;
+    grid-auto-rows: auto;
+    grid-template-columns: auto auto auto;
+    align-items: center;
+  }
+
+  div.radio_table > * {
+    margin: 10px;
+  }
+
+  div#profile-settings-block {
+    width: 50%;
+    margin: 0 auto;
+  }
+</style>
+<script src="{% static "js/scrollbars.js" %}"></script>
+<script src="{% static "js/colors.js" %}"></script>
+<script src="{% static "js/check_queue.js" %}"></script>
+<script src="{% static "js/ping.js" %}"></script>
+<body onload="init_check_queue(0); init_ping();">
+  <section id="main">
+    {% if error %}
+      <div class="colored_block orange opaque" color_const>
+          {{error}}
+      </div>
+    {% elif info %}
+      <div class="colored_block green" color_const>
+          {{info}}
+      </div>
+    {% endif %}
+    <div class="colored_block cyan" id="profile-settings-block">
+      <h2>Настройки профиля</h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>Фон приложения: </p>
+        <div class="radio_table">
+          <input type="radio" value="0" id="theme_0" name="theme">
+          <p>Светлый</p>
+          <p></p>
+          <input type="radio" value="1" id="theme_1" name="theme">
+          <p>Темный</p>
+          <p></p>
+        </div>
+
+        <p>Цвет приложения: </p>
+        <div class="radio_table">
+            <input type="radio" value="0" id="color_0" name="color">
+            <div class="colored_block cyan opaque example" color_const></div>
+            <p>Голубой</p>
+            <input type="radio" value="1" id="color_1" name="color">
+            <div class="colored_block red opaque example" color_const></div>
+            <p>Красный</p>
+            <input type="radio" value="2" id="color_2" name="color">
+            <div class="colored_block orange opaque example" color_const></div>
+            <p>Оранжевый</p>
+            <input type="radio" value="3" id="color_3" name="color">
+            <div class="colored_block green opaque example" color_const></div>
+            <p>Зеленый</p>
+            <input type="radio" value="4" id="color_4" name="color">
+            <div class="colored_block blue opaque example" color_const></div>
+            <p>Синий</p>
+            <input type="radio" value="5" id="color_5" name="color">
+            <div class="colored_block purple opaque example" color_const></div>
+            <p>Фиолетовый</p>
+        </div>
+        <button type="submit">Сохранить</button>
+      </form>
+    </div>
+  </section>
+  {% include "footer_template.html" with link=about_link back_link=back_link %}
+</body>
+<script>
+  var theme = {{ theme }}, color = {{ color }};
+  var themeRadio = document.getElementById("theme_" + theme);
+  themeRadio.checked = true;
+  var colorRadio = document.getElementById("color_" + color);
+  colorRadio.checked = true;
+</script>
+<script>
+    setScrollBar("main", "profile-settings-block");
+</script>
+{% include 'theme_changer.html' with preferredTheme=preferredTheme %}
+</html>
