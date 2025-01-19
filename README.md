@@ -11,9 +11,41 @@
 1. Склонируйте репозиторий: ```git clone git@github.com:dmitryh2004/QuaskManager.git```
 1. Создайте виртуальную среду: ```python -m venv .venv```;
 2. Активируйте ее в зависимости от вашей ОС;
-2. Установите необходимые пакеты: в виртуальной среде пропишите команды ```pip install Django```, ```pip install djangorestframework```;
-3. Перейдите в папку groupManager: ```cd groupManager```;
-4. Запустите сервер: ```python manage.py runserver [port]```. При необходимости укажите порт, на котором будет открыт сервер.
+2. Установите необходимые пакеты:
+```amqp==5.3.1
+asgiref==3.8.1
+async-timeout==5.0.1
+beautifulsoup4==4.12.3
+billiard==4.2.1
+celery==5.4.0
+click==8.1.7
+click-didyoumean==0.3.1
+click-plugins==1.1.1
+click-repl==0.3.0
+colorama==0.4.6
+cron-descriptor==1.4.5
+Django==5.1.1
+django-celery-beat==2.7.0
+django-resized==1.0.3
+django-timezone-field==7.0
+django-tinymce==4.1.0
+djangorestframework==3.15.2
+kombu==5.4.2
+pillow==11.0.0
+prompt_toolkit==3.0.48
+python-crontab==3.2.0
+python-dateutil==2.9.0.post0
+pytz==2024.2
+redis==5.2.0
+six==1.16.0
+soupsieve==2.6
+sqlparse==0.5.1
+tzdata==2024.1
+vine==5.1.0
+wcwidth==0.2.13
+```
+7. Перейдите в папку groupManager: ```cd groupManager```;
+8. Запустите сервер: ```python manage.py runserver [port]```. При необходимости укажите порт, на котором будет открыт сервер.
 
 ## Функционал
 
